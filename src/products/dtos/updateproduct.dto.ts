@@ -5,7 +5,6 @@ export class UpdateProductDto{
     name: string;
     @IsNotEmpty()
     description: string;
-    image_url: string;
     @IsNotEmpty()
     price: number;
     @IsNotEmpty()

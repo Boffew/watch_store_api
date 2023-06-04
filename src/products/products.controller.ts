@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UploadedFile, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dtos/createproduct.dto';
 import { UpdateProductDto } from './dtos/updateproduct.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('api/products')
 export class ProductsController {
@@ -17,15 +18,32 @@ export class ProductsController {
        return product
     }
     @Post()
+    @UseInterceptors(FileInterceptor('image',{
+        fileFilter: (req, file, cb) => {
+          if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+            return cb(new Error('Only image files are allowed!'), false);
+          }
+          cb(null, true);
+        },
+      }))
     @UsePipes(new ValidationPipe)
-    async createProduct(@Body() productData: CreateProductDto){
-        const product = await this.productsService.createNew(productData)
+    async createProduct(@Body() productData: CreateProductDto,@UploadedFile() image: Express.Multer.File){
+        const product = await this.productsService.createNew(productData,image)
         return product;
     }
     @Put(':id')
+    @UseInterceptors(FileInterceptor('image',{
+        fileFilter: (req, file, cb) => {
+          if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+            return cb(new Error('Only image files are allowed!'), false);
+          }
+          cb(null, true);
+        },
+      }))
     @UsePipes(new ValidationPipe)
-    async updateProduct(@Param('id') id: number,@Body() productData: UpdateProductDto){
-        const product = await this.productsService.update(id,productData)
+    async updateProduct(@Param('id') id: number,@Body() productData: UpdateProductDto,@UploadedFile() image?: Express.Multer.File){
+
+        const product = await this.productsService.update(id,productData,image)
         return product;
     }
     @Delete(':id')

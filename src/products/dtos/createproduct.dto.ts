@@ -5,7 +5,6 @@ export class CreateProductDto{
     name: string;
     @IsNotEmpty()
     description: string;
-    image_url: string;
     @IsNotEmpty()
     price: number;
     @IsNotEmpty()
