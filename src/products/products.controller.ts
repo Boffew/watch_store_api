@@ -8,8 +8,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class ProductsController {
     constructor(private readonly productsService: ProductsService) {}
     @Get()
-    async getProducts(@Query('q') q: string, @Query('page') page=1){
-       const products = await this.productsService.getAll(page,q)
+    async getProducts(@Query('search') search: string, @Query('page') page=1){
+       const products = await this.productsService.getAll(page,search)
        return products;
     }
     @Get(':id')
