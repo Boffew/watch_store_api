@@ -1,11 +1,18 @@
-import { Body, Controller, Get, Post, Query, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dtos/createuser.dto';
+import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
+import { Roles } from 'src/authorization/decorators/roles.decorator';
+import { Role } from 'src/authorization/models/role.enum';
+import { RolesGuard } from 'src/authorization/guards/roles.guard';
 
 @Controller('api/users')
 export class UsersController {
     constructor(private readonly usersService: UsersService){}
-    @Get()
+
+    @Roles(Role.ADMIN)
+    @UseGuards(JwtAuthGuard,RolesGuard)
+    @Get('admin')
     async getUsers(@Query('page') page:number, @Query('search') search: string){
         const users = await this.usersService.getAll(page, search);
         return users
