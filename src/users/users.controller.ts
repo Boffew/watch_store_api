@@ -6,17 +6,18 @@ import { Roles } from 'src/authorization/decorators/roles.decorator';
 import { Role } from 'src/authorization/models/role.enum';
 import { RolesGuard } from 'src/authorization/guards/roles.guard';
 
-@Controller('api/users')
+@Controller('api')
 export class UsersController {
     constructor(private readonly usersService: UsersService){}
 
     @Roles(Role.ADMIN)
     @UseGuards(JwtAuthGuard,RolesGuard)
-    @Get('admin')
+    @Get('admin/users')
     async getUsers(@Query('page') page:number, @Query('search') search: string){
         const users = await this.usersService.getAll(page, search);
         return users
     }
+
     @Post('register')
     @UsePipes(new ValidationPipe)
     async register(@Body() user: CreateUserDto){
