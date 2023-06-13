@@ -1,14 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { UpdateOrderDto } from './dtos/updateorder.dto';
+import { CreateOrderDto } from './dtos/createorder.dto';
+import { Connection } from 'mysql2';
 
 @Injectable()
 export class OrdersService {
-  create(orderData: any) {
-        throw new Error('Method not implemented.');
-    }
-    constructor(@Inject('DATABASE_CONNECTION') private readonly connection: any, private readonly cloudinary: CloudinaryService){
-    }
+  constructor(@Inject('DATABASE_CONNECTION') private readonly connection: any, private readonly cloudinary: CloudinaryService){
+  }
+
     async getAll(page=1,searchTerm?: string){
         const perPage = 20;
         let query = 'SELECT * FROM Orders';
@@ -25,36 +25,37 @@ export class OrdersService {
     }
 
     async getById(id: number){
-        const [result] = await this.connection.query('SELECT * FROM Orders WHERE id = ?', [id])
+        const [result] = await this.connection.query(`SELECT * FROM Orders WHERE id = ?`, [id])
         return result[0];
     }
 
-    async update(id: number, orderDto: UpdateOrderDto,file?: Express.Multer.File) {
-
-        const [existingProduct] = await this.connection.query('SELECT * FROM Orders WHERE id = ?', [id]);
-        if (!existingProduct) {
-          throw new Error(`Product with ID ${id} not found`);
-        }
-         
-          const result = await this.connection.execute('UPDATE Orders SET user_id = ?, voucher_id = ? WHERE id = ?', [orderDto.user_id,orderDto.user_id,new Date(),
-            id,
-          ]);
-          const [updateOrder] = await this.connection.query('SELECT * FROM Orders WHERE id = ?', [id]);
-          return updateOrder[0];
+    async createNew(orderDto: CreateOrderDto) {
+      // console.log("test service")
+      const result = await this.connection.query(
+        'INSERT INTO orders (user_id, payment, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+        [
+          orderDto.user_id,
+          orderDto.payment,
+          orderDto.status,
+          new Date(),
+          new Date()
+        ],
+      );
+      
+      const [newOrder] =  await this.connection.query (
+        'SELECT * FROM orders WHERE id = ?',
+        [result[0].insertId],
+       
+      );
+      
+     
+      return newOrder;
+      
     }
 
     async delete(id: number){
         const result = await this.connection.query('DELETE FROM Orders where id=?', [id]);
     }
    
-    async sendOrderNotification(email: string, order: any) {
-        await this.connection.sendMail({
-          to: email,
-          subject: 'Thông báo đặt hàng thành công',
-          template: 'order-notification',
-          context: {
-            order,
-          },
-        });
-    }
+  
 }
