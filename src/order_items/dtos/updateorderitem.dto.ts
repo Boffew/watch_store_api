@@ -1,12 +1,13 @@
 import { IsNotEmpty } from "class-validator";
 
-export class UpdateOrderDto{
+export class UpdateOrderItemDto{
     @IsNotEmpty()
-    user_id: number;
+    order_id: string;
     @IsNotEmpty()
-    voucher_id: string;
+    product_id:string;
     @IsNotEmpty()
-    payment:string;
+    quantity: number;
     @IsNotEmpty()
-    status:string;
+    price: number;
+
 }

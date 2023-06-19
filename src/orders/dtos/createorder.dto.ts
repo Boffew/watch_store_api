@@ -1,10 +1,19 @@
-import { IsNotEmpty } from "class-validator";
+import { IsEnum, IsNotEmpty } from "class-validator";
+import { OrderStatus, PaymentMethod } from "../method/OrderMethod";
+
+
+
 
 export class CreateOrderDto{
     @IsNotEmpty()
     user_id: string;
+
     @IsNotEmpty()
-    payment:string;
+    @IsEnum(PaymentMethod)
+    payment:PaymentMethod;
+    
     @IsNotEmpty()
-    status:string;
+    @IsEnum(OrderStatus)
+    status: OrderStatus;
 }
+

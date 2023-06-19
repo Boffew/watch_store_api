@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { UpdateOrderDto } from './dtos/updateorder.dto';
+
 import { CreateOrderDto } from './dtos/createorder.dto';
-import { Connection } from 'mysql2';
+
 
 @Injectable()
 export class OrdersService {
@@ -47,10 +47,7 @@ export class OrdersService {
         [result[0].insertId],
        
       );
-      
-     
       return newOrder;
-      
     }
 
     async delete(id: number){

@@ -7,9 +7,12 @@ import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
 import { AuthModule } from './auth/auth.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { OrderItemsModule } from './order_items/order_items.module';
 @Module({
-  imports: [DatabaseModule.forRoot(), UsersModule, ProductsModule, OrdersModule, AuthModule, CloudinaryModule],
+  
+  imports: [DatabaseModule.forRoot(), UsersModule, ProductsModule, OrdersModule,OrderItemsModule, AuthModule, CloudinaryModule],
   controllers: [AppController],
   providers: [AppService],
+  
 })
 export class AppModule {}
