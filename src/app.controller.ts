@@ -5,7 +5,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { LocalAuthGuard } from './auth/local-auth.guard';
 import { AuthService } from './auth/auth.service';
 import { JwtAuthGuard } from './auth/jwt.auth.guard';
-
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 @Controller()
 export class AppController {
   constructor(private readonly authService: AuthService) {}
@@ -14,14 +14,15 @@ export class AppController {
   getHello(): string {
     return "Hello";
   }
+  @ApiTags('users')
   @UseGuards(LocalAuthGuard)
-  @Post('auth/login')
+  @Post('api/users/login')
   async login(@Request() req){
-    console.log(req.user)
     return this.authService.login(req.user)
   }
+  @ApiTags('users')
   @UseGuards(JwtAuthGuard)
-  @Get('profile')
+  @Get('api/users/profile')
   getProfile(@Request() req) {
     return req.user;
   }
