@@ -2,8 +2,7 @@ import { IsEnum, IsNotEmpty } from "class-validator";
 import { OrderStatus, PaymentMethod } from "../method/OrderMethod";
 import { ApiProperty } from "@nestjs/swagger";
 
-export class CreateOrderDto{
-
+export class UpdateOrderDto{
     @ApiProperty({ example: 0, description: 'The ID of the order' })
     @IsNotEmpty()
     user_id: number;
@@ -14,4 +13,3 @@ export class CreateOrderDto{
     @ApiProperty({ enum: OrderStatus })
     status: OrderStatus;
 }
-

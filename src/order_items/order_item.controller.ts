@@ -3,19 +3,25 @@ import { OrderItemsService } from "./order_items.service";
 import { get } from "http";
 import { CreateOrderItemDto } from "./dtos/createorderitem.dto";
 import { UpdateOrderItemDto } from "./dtos/updateorderitem.dto";
-import { ApiResponse } from "@nestjs/swagger";
+import { ApiBadRequestResponse, ApiNotFoundResponse, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
-@Controller('api/orderItem')
+
+@ApiTags('order-items')
+@Controller('api/orderItems')
 export class OrderItemsController {
     constructor(private readonly orderItemsService: OrderItemsService) {}
 
+    @ApiOperation({ summary: 'Get all order items' })
+    @ApiResponse({ status: 200, description: 'All order items' })
     @Get()
-    @ApiResponse({status:200,description:'all order'})
     async getOrderitems(@Query('q') q: string, @Query('page') page=1){
         const orders = await this.orderItemsService.getAll(page,q)
         return orders;
     }
 
+    @ApiOperation({ summary: 'Get order item by ID' })
+    @ApiNotFoundResponse({ description: 'Order item not found' })
+    @ApiResponse({status:200,description:'all order item'})
     @Get(':id')
     async getOrderitem(@Param('id') id: number) {
         const orderitem = await this.orderItemsService.getById(id)
@@ -25,13 +31,20 @@ export class OrderItemsController {
           }
         return orderitem;
     }
-
+    
+    @ApiOperation({ summary: 'Create new order item' })
+    @ApiResponse({ status: 201, description: 'Order item created successfully' })
+    @ApiBadRequestResponse({ description: 'Invalid order item data' })
     @Post()
     async create(@Body() orderitemData: CreateOrderItemDto) {
         const orderitem = await this.orderItemsService.createNew(orderitemData)
         return  orderitem ;
     }
 
+    @ApiOperation({ summary: 'Update an order item' })
+    @ApiResponse({ status: 200, description: 'Order item updated successfully' })
+    @ApiBadRequestResponse({ description: 'Invalid order item data' })
+    @ApiNotFoundResponse({ description: 'Order item not found' })
     @Put(':id')
     @UsePipes(new ValidationPipe())
     async updateOrderitem(@Param('id') id: number, @Body() orderitemData: UpdateOrderItemDto) {
@@ -39,11 +52,14 @@ export class OrderItemsController {
         const orderitem = await this.orderItemsService.update(id, orderitemData);
         return orderitem;
       } catch (e) {
+        console.log(e); // In ra thông tin lỗi cụ thể
         throw new BadRequestException('Unable to update order item');
       }
     }
 
-
+    @ApiOperation({ summary: 'Delete an order item' })
+    @ApiResponse({ status: 200, description: 'Order item deleted successfully' })
+    @ApiNotFoundResponse({ description: 'Order item not found' })
     @Delete(':id')
     async deleteOrder(@Param('id') id: number){
         try {

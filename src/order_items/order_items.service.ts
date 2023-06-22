@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { CloudinaryService } from "src/cloudinary/cloudinary.service";
 import { CreateOrderItemDto } from "./dtos/createorderitem.dto";
 import { UpdateOrderItemDto } from "./dtos/updateorderitem.dto";
@@ -52,12 +52,11 @@ export class OrderItemsService {
 
     async update(id: number, orderitemDto: UpdateOrderItemDto) {
 
-      const [existingOrderitem] = await this.connection.query('SELECT * FROM order_items WHERE id = ?', [id]);
+      const [existingOrderitem]= await this.connection.query('SELECT * FROM order_items WHERE id = ?', [id]);
       if (!existingOrderitem) {
-        throw new Error(`Order_item with ID ${id} not found`);
+        throw new NotFoundException(`ID ${id} không tồn tại`);
       }
-      const result = await this.connection.execute
-      (
+      const result = await this.connection.execute(
         'UPDATE order_items SET order_id = ?, product_id = ?,quantity = ?,price = ?, updated_at = ? WHERE id = ?', 
         [
           orderitemDto.order_id,
@@ -65,13 +64,17 @@ export class OrderItemsService {
           orderitemDto.quantity,
           orderitemDto.price,
           new Date(),
-          new Date(),
         id,
       ]);
-        const [updatedOrderitem] = await this.connection.query('SELECT * FROM order_items WHERE id = ?', [id]);
-        return updatedOrderitem[0];
+        try {
+          const [updateOrderitem] = await this.connection.query('SELECT * FROM order_items WHERE id = ?', [id]);
+          return updateOrderitem[0];
+        } catch (e) {
+          throw new InternalServerErrorException('Unable to update order item');
+        }
       }
 
+    
     async delete(id: number){
       const result = await this.connection.query('DELETE FROM order_items where id=?', [id]);
     }

@@ -1,7 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 import { CreateOrderDto } from './dtos/createorder.dto';
+import { UpdateOrderDto } from './dtos/updateorder.dto';
 
 
 @Injectable()
@@ -49,6 +50,30 @@ export class OrdersService {
       );
       return newOrder;
     }
+
+    async update(id: number, orderDto: UpdateOrderDto) {
+
+      const [existingOrder]= await this.connection.query('SELECT * FROM orders WHERE id = ?', [id]);
+      if (!existingOrder) {
+        throw new NotFoundException(`ID ${id} không tồn tại`);
+      }
+      const result = await this.connection.execute(
+        'UPDATE orders SET user_id = ?, payment = ?,status = ?, updated_at = ? WHERE id = ?', 
+        [
+          orderDto.user_id,
+          orderDto.payment,
+          orderDto.status,
+          new Date(),
+         
+        id,
+      ]);
+        try {
+          const [updateOrderitem] = await this.connection.query('SELECT * FROM orders WHERE id = ?', [id]);
+          return updateOrderitem[0];
+        } catch (e) {
+          throw new InternalServerErrorException('Unable to update order');
+        }
+      }
 
     async delete(id: number){
         const result = await this.connection.query('DELETE FROM Orders where id=?', [id]);
