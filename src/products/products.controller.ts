@@ -3,13 +3,14 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dtos/createproduct.dto';
 import { UpdateProductDto } from './dtos/updateproduct.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+@ApiTags('products')
 @Controller('api/products')
 export class ProductsController {
     constructor(private readonly productsService: ProductsService) {}
     @Get()
-    async getProducts(@Query('q') q: string, @Query('page') page=1){
-       const products = await this.productsService.getAll(page,q)
+    async getProducts(@Query('search') search: string, @Query('page') page=1){
+       const products = await this.productsService.getAll(page,search)
        return products;
     }
     @Get(':id')
