@@ -4,9 +4,9 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateOrderDto{
 
-    @ApiProperty({ example: 0, description: 'The ID of the order' })
-    @IsNotEmpty()
-    user_id: number;
+    // @ApiProperty({ example: 0, description: 'The ID of the order' })
+    // @IsNotEmpty()
+    // user_id: number;
 
     @ApiProperty({ enum: PaymentMethod })
     payment:PaymentMethod;

@@ -38,7 +38,8 @@ export class OrderItemsController {
     @Post()
     async create(@Body() orderitemData: CreateOrderItemDto) {
         const orderitem = await this.orderItemsService.createNew(orderitemData)
-        return  orderitem ;
+        const totalOrderItemPrice = await this.orderItemsService.getTotalOrderItemPrice();
+        return  { orderitem, totalOrderItemPrice } ;
     }
 
     @ApiOperation({ summary: 'Update an order item' })
@@ -68,5 +69,35 @@ export class OrderItemsController {
           } catch (e) {
             return { error: 'Unable to delete order' };
         }
+    }
+
+    @ApiOperation({ summary: 'Get order item by orderId' })
+    @ApiNotFoundResponse({ description: 'Order item not found' })
+    @ApiResponse({status:200,description:'all order item'})
+    @Get('order/:orderId')
+    async getOrderitemsByOrderId(@Param('orderId') orderId: number) {
+      const orderitem = await this.orderItemsService.getByOrderId(orderId);
+      if (!orderitem.length) {
+        throw new NotFoundException('No order item found for order');
+      }
+      return orderitem;
+    }
+
+    @ApiOperation({ summary: 'Get order item by productId' })
+    @ApiNotFoundResponse({ description: 'Order item not found' })
+    @ApiResponse({status:200,description:'all order item'})
+    @Get('product/:productId')
+    async getOrderitemsByProductId(@Param('productId') productId: number) {
+      const orderitem = await this.orderItemsService.getByProductId(productId);
+      if (!orderitem.length) {
+        throw new NotFoundException('No order item found for product');
+      }
+      return orderitem;
+    }
+
+    @Get(':id/total-price')
+    async getTotalPrice(@Param('id') id: number): Promise<number> {
+      const totalPrice = await this.orderItemsService.getTotalPrice(id);
+    return totalPrice;
     }
 }

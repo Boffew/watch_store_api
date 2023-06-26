@@ -79,4 +79,16 @@ export class OrdersController {
             return { error: 'Unable to delete order' };
         }
     }
+
+    @ApiOperation({ summary: 'Get order by userId' })
+    @ApiNotFoundResponse({ description: 'Order not found' })
+    @ApiResponse({status:200,description:'all order'})
+    @Get('user/:userId')
+    async getOrdersByUserId(@Param('userId') userId: number) {
+      const orders = await this.ordersService.getByUserId(userId);
+      if (!orders.length) {
+        throw new NotFoundException('No orders found for user');
+      }
+      return orders;
+    }
 }

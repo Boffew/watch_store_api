@@ -3,11 +3,12 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 import { CreateOrderDto } from './dtos/createorder.dto';
 import { UpdateOrderDto } from './dtos/updateorder.dto';
+import { orders } from './interfaces/orders.interface';
 
 
 @Injectable()
 export class OrdersService {
-  constructor(@Inject('DATABASE_CONNECTION') private readonly connection: any, private readonly cloudinary: CloudinaryService){
+  constructor(@Inject('DATABASE_CONNECTION') private readonly connection: any){
   }
 
     async getAll(page=1,searchTerm?: string){
@@ -33,9 +34,8 @@ export class OrdersService {
     async createNew(orderDto: CreateOrderDto) {
       // console.log("test service")
       const result = await this.connection.query(
-        'INSERT INTO orders (user_id, payment, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO orders ( payment, status, created_at, updated_at) VALUES ( ?, ?, ?, ?)',
         [
-          orderDto.user_id,
           orderDto.payment,
           orderDto.status,
           new Date(),
@@ -79,5 +79,10 @@ export class OrdersService {
         const result = await this.connection.query('DELETE FROM Orders where id=?', [id]);
     }
    
+    async getByUserId(userId: number): Promise<orders[]> {
+      const query = `SELECT * FROM orders WHERE user_id = ?`;
+      const [rows] = await this.connection.query(query, [userId]);
+      return rows; 
+    }
   
 }
