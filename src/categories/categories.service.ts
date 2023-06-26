@@ -7,6 +7,10 @@ export class CategoriesService {
     constructor(@Inject('DATABASE_CONNECTION') private readonly connection: any){
 
     }
+    async getAll(){
+        const [result] = await this.connection.query('Select * from categories')
+        return result
+    }
     async create(categoryDto: CreateCategoryDto){
         const result = await this.connection.query('INSERT INTO categories (name,description,image_url,created_at,updated_at) VALUES(?,?,?,?,?)',[categoryDto.name,categoryDto.description,categoryDto.image_url,new Date(),new Date()])
         const id = result[0].insertId

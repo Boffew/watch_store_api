@@ -39,7 +39,10 @@ export class UsersService {
     }
     async getByName(name:string){
         const [newUser] = await this.connection.query('SELECT * FROM users WHERE username = ?',[name])
-        return newUser[0];
+        if(newUser[0]){
+        return newUser[0]}
+
+        else{ throw new HttpException('user is not found', HttpStatus.NOT_FOUND)}
     }
     async update(){
         

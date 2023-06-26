@@ -13,7 +13,7 @@ export class CategoriesController {
     constructor(private categoriesService: CategoriesService){}
     @Get()
     async getCategory(){
-        return 'hello category'
+        return this.categoriesService.getAll()
     }
     @Post()
     @UsePipes(new ValidationPipe)
