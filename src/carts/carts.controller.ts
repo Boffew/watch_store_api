@@ -21,7 +21,7 @@ export class CartsController {
     return cart;
  }
  @Post('items')
- async addItemToCart(@Req() req, @Body() cartItemData: AddItemToCart) : Promise<any> {
+ async addItemToCart(@Req() req, @Body() cartItemData: AddItemToCart) : Promise<string> {
    const cartId = await req.user.cart_id;
    await this.cartsService.addToCart(cartId, cartItemData.product_id, cartItemData.quantity);
    return "item added successfully"
@@ -41,8 +41,12 @@ async updateCartItems(@Param('id') id: number, @Body() cartItemData: UpdateCartQ
 async deleteCartItems(@Param('id') id: number): Promise<string>{
 return this.cartsService.removeFromCart(id)
 }
-@Delete()
+@Delete('/clear')
 async deleteAll(@Req() req): Promise<string>{
 return this.cartsService.clearCart(req.user.cart_id)
+}
+@Get('total')
+async getTotal(@Req() req): Promise<number>{
+   return this.cartsService.getCartTotal(req.user.cart_id)
 }
 }

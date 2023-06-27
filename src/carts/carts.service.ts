@@ -69,4 +69,8 @@ export class CartsService {
       await this.connection.query('DELETE FROM cart_items WHERE cart_id = ?', [cartId]);
       return 'cart has been cleared'
     }
+    async getCartTotal(cartId: number): Promise<number> {
+      const [result] = await this.connection.query('SELECT SUM(total) AS total FROM cart_items WHERE cart_id = ?', [cartId]);
+      return result[0].total;
+    }
 }
