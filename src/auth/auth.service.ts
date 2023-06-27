@@ -13,13 +13,12 @@ export class AuthService {
     if (user && isMatch) {
       const { password, ...result } = user;
       return result;
-
     }
     return null;
   }
   async login(user: any) {
-    const payload = user
     const cart=  await this.cartService.createNew(user.id)
+    const payload = {id: user.id, cart_id: cart.id,username: user.username,email: user.email,full_name: user.full_name,address: user.address,birthday: user.birthday,role: user.role}
     return {
       access_token: this.jwtService.sign(payload),
     };

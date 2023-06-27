@@ -13,7 +13,7 @@ import { CartsService } from 'src/carts/carts.service';
   imports: [UsersModule,PassportModule,
     JwtModule.register({
     secret: jwtConstants.secret,
-    signOptions: { expiresIn: '600s' },
+    signOptions: { expiresIn: '6000s' },
   }),],
   providers: [AuthService,LocalStrategy,JwtStrategy,RolesGuard,CartsService],
   exports: [AuthService],

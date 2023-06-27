@@ -6,10 +6,11 @@ import { Roles } from 'src/authorization/decorators/roles.decorator';
 import { Role } from 'src/authorization/models/role.enum';
 import { RolesGuard } from 'src/authorization/guards/roles.guard';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { CartsService } from 'src/carts/carts.service';
 @Controller('api')
 @ApiTags('users')
 export class UsersController {
-    constructor(private readonly usersService: UsersService){}
+    constructor(private readonly usersService: UsersService, private readonly cartsServices: CartsService){}
 
     @Roles(Role.ADMIN)
     @UseGuards(JwtAuthGuard,RolesGuard)
