@@ -5,7 +5,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { LocalAuthGuard } from './auth/local-auth.guard';
 import { AuthService } from './auth/auth.service';
 import { JwtAuthGuard } from './auth/jwt.auth.guard';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { LoginDto } from './auth/dto/login.dto';
 @Controller()
 export class AppController {
   constructor(private readonly authService: AuthService) {}
@@ -16,10 +17,12 @@ export class AppController {
   }
   @ApiTags('users')
   @UseGuards(LocalAuthGuard)
+  @ApiBody({ description: 'Login credentials', type: LoginDto })
   @Post('api/users/login')
   async login(@Request() req){
     return this.authService.login(req.user)
   }
+  
   @ApiTags('users')
   @UseGuards(JwtAuthGuard)
   @Get('api/users/profile')

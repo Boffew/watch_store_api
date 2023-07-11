@@ -8,6 +8,7 @@ import { jwtConstants } from './contants';
 import { JwtStrategy } from './jwt.strategy';
 import { RolesGuard } from 'src/authorization/guards/roles.guard';
 import { CartsService } from 'src/carts/carts.service';
+import { OrdersService } from 'src/orders/orders.service';
 
 @Module({
   imports: [UsersModule,PassportModule,
@@ -15,7 +16,7 @@ import { CartsService } from 'src/carts/carts.service';
     secret: jwtConstants.secret,
     signOptions: { expiresIn: '6000s' },
   }),],
-  providers: [AuthService,LocalStrategy,JwtStrategy,RolesGuard,CartsService],
+  providers: [AuthService,LocalStrategy,JwtStrategy,RolesGuard,CartsService,OrdersService],
   exports: [AuthService],
 })
 export class AuthModule {}

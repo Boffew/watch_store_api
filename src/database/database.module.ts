@@ -14,9 +14,9 @@ export class DatabaseModule {
           useFactory: async (): Promise<Pool> => {
             return createPool({
               host: 'localhost',
-              user: 'boffew',
-              password: 'admin',
-              database: 'boffew',
+              user: 'root',
+              password: '',
+              database: 'projectnodejs',
               connectionLimit: 10,
             });
           },
