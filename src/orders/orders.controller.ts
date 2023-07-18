@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, Put, Delete, Req, NotFoundException, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Put, Delete, Req, NotFoundException, UseGuards,Request } from '@nestjs/common';
 import { CreateOrderItemDto } from './dtos/createorderitem.dto';
 import { OrdersService } from './orders.service';
 import { UpdateOrderItemDto } from './dtos/updateorderitem.dto';
@@ -9,6 +9,7 @@ import { UpdateOrderDto } from './dtos/updateorder.dto';
 import { OrderStatus, PaymentMethod } from './methor/OrderMethod';
 import { CreateOrderDto } from './dtos/createorder.dto';
 import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
+import { User } from 'src/users/interface/User.interface';
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('order')
@@ -19,29 +20,29 @@ constructor(private readonly ordersService: OrdersService) {}
     @ApiOperation({ summary: 'Create new order item' })
     @ApiResponse({ status: 201, description: 'Order item created successfully' })
     @ApiBearerAuth() // Đánh dấu API endpoint này yêu cầu xác thực bằng JWT token
-    @Post('create/orderitem')
-    async createNew(@Body() orderItemDto: CreateOrderItemDto) {
-        const newOrderItem = await this.ordersService.createNew(orderItemDto);
-
-    return {
-    message: 'Order item created successfully',
-    data: newOrderItem,
-    };
+    @UseGuards(JwtAuthGuard)
+    @Post()
+    async createNew(
+        @Body() orderDto: CreateOrderDto,
+        @Req() req,
+    ): Promise<OrderItem> {
+        const user = req.user as User;
+        return await this.ordersService.createNew(orderDto, user);
     }
 
-    @ApiOperation({ summary: 'Create new order' })
-    @ApiResponse({ status: 201, description: 'Order created successfully' })
-    @ApiBearerAuth() // Đánh dấu API endpoint này yêu cầu xác thực bằng JWT token
-    @Post('create')
-    async createOrder(
-    @Body('user_id') userId: string,
-    @Body('payment') payment: PaymentMethod,
-    @Body('status') status: OrderStatus,
-    ): Promise<Order> {
-    return this.ordersService.createOrderNew(userId, payment, status);
-    }
+    // @ApiOperation({ summary: 'Create new order' })
+    // @ApiResponse({ status: 201, description: 'Order created successfully' })
+    // @ApiBearerAuth() // Đánh dấu API endpoint này yêu cầu xác thực bằng JWT token
+    // @Post('create')
+    // async createOrder(
+    // @Body('user_id') userId: string,
+    // @Body('payment') payment: PaymentMethod,
+    // @Body('status') status: OrderStatus,
+    // ): Promise<Order> {
+    // return this.ordersService.createOrderNew(userId, payment, status);
+    // }
 
-  
+    @UseGuards(JwtAuthGuard)
     @Get(':order_id/items')
     async getOrderItemsByOrderId(@Param('order_id') orderId: number) {
         const orderItems = await this.ordersService.getOrderItemsByOrderId(orderId);
@@ -51,7 +52,7 @@ constructor(private readonly ordersService: OrdersService) {}
 
     @ApiOperation({ summary: 'Update an order item' })
     @ApiResponse({ status: 200, description: 'Order item updated successfully' })
-   
+    @UseGuards(JwtAuthGuard)
     @ApiBearerAuth() // Đánh dấu API endpoint này yêu cầu xác thực bằng JWT token
     @Put(':order_item_id')
     async updateOrderItem(@Param('order_item_id') orderItemId: number, @Body() updateOrderItemDto: UpdateOrderItemDto) {
@@ -61,7 +62,7 @@ constructor(private readonly ordersService: OrdersService) {}
 
     
     @ApiOperation({ summary: 'Delete an order item' })
-    
+    @UseGuards(JwtAuthGuard)
     @ApiBearerAuth() // Đáh dấu API endpoint này yêu cầu xác thực bằng JWT token
     @Delete(':id/items/:itemId')
     async deleteOrderItem(@Param('itemId') orderItemId: number): Promise<void> {
@@ -78,6 +79,7 @@ constructor(private readonly ordersService: OrdersService) {}
         await this.ordersService.deleteOrderById(orderId);
     }
 
+    @UseGuards(JwtAuthGuard)
     @ApiOperation({ summary: 'Update an order' })
     @ApiResponse({ status: 200, description: 'Order updated successfully' })
     @ApiParam({ name: 'id', description: 'ID of the order to be updated' })
@@ -91,5 +93,13 @@ constructor(private readonly ordersService: OrdersService) {}
         const updated = await this.ordersService.updateOrder(orderId, updatedOrder);
         return updated;
     }
+
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @Get(':userId/orders')
+    async getOrdersByUserId(@Param('userId') userId: number): Promise<Order[]> {
+    const orders = await this.ordersService.getOrdersByUserId(userId);
+    return orders;
+  }
 
 }
