@@ -10,8 +10,19 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CartsModule } from './carts/carts.module';
 import { PassportModule } from '@nestjs/passport';
+import { ReviewsModule } from './reviews/review.module';
 @Module({
-  imports: [PassportModule.register({ defaultStrategy: 'jwt' }),DatabaseModule.forRoot(), UsersModule, ProductsModule, OrdersModule, AuthModule, CloudinaryModule, CategoriesModule, CartsModule],
+  imports: [
+  PassportModule.register({ defaultStrategy: 'jwt' }),
+  DatabaseModule.forRoot(), 
+  UsersModule, 
+  ProductsModule, 
+  OrdersModule, 
+  AuthModule, 
+  CloudinaryModule, 
+  CategoriesModule, 
+  CartsModule,  
+  ReviewsModule],
   controllers: [AppController],
   providers: [AppService],
 })

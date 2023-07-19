@@ -1,43 +1,53 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 
+import { User } from 'src/users/interface/User.interface';
+import { CreateOrderDto } from './dtos/createorder.dto';
+import { UpdateOrderDto } from './dtos/updateorder.dto';
+import { UpdateOrderItemDto } from './dtos/updateorderitem.dto';
 import { OrderItem } from './interface/orderitems.interface';
 import { Order } from './interface/orders.interface';
-import { CreateOrderItemDto } from './dtos/createorderitem.dto';
-import { UpdateOrderItemDto } from './dtos/updateorderitem.dto';
-import { UpdateOrderDto } from './dtos/updateorder.dto';
-import { OrderStatus, PaymentMethod } from './methor/OrderMethod';
-import { CreateOrderDto } from './dtos/createorder.dto';
 
 
 @Injectable()
 export class OrdersService {
-  constructor(@Inject('DATABASE_CONNECTION') private readonly connection: any){
+  constructor(@Inject('DATABASE_CONNECTION')  private readonly connection: any ){
   }
-  async createNew(orderItemDto: CreateOrderItemDto): Promise<OrderItem> {
-    const { order_id, cartitems_id, total_price, customer_name, customer_email, shipping_address } = orderItemDto;
-
-    // Check if an order exists for the order_id
-    // const order = await this.connection.getOrderById(order_id);
-
-    // // If an order does not exist, throw an error
-    // if (!order) {
-    //   throw new Error(`Order with ID ${order_id} does not exist.`);
-    // }
-
-    // Create a new order item associated with the order
-    const result = await this.connection.query(
-      'INSERT INTO order_items (order_id, cartitems_id, total_price, customer_name, customer_email, shipping_address, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [order_id, cartitems_id, total_price, customer_name, customer_email, shipping_address, new Date(), new Date()],
-    );
-
-    const [newOrderItem] = await this.connection.query(
-      'SELECT * FROM order_items WHERE id = ?',
-      [result.insertId],
-    );
-
-    return newOrderItem;
-  }
+  async createNew(orderDto: CreateOrderDto, user: User): Promise<OrderItem> {
+    try {
+      const { payment, status } = orderDto.order;
+      const { cart_id, total_price, customer_name, customer_email, shipping_address } = orderDto.orderItems;
   
+      // Insert a new order into the `orders` table and retrieve the new order ID
+      const newOrderResult = await this.connection.query(
+        `INSERT INTO orders (user_id, payment, status) VALUES (?, ?, ?)`,
+        [user.id, payment, status]
+      );
+  
+      const newInsertOrderId = await this.connection.query(`SELECT LAST_INSERT_ID() as "insertId"`)
+  
+      const newOrderId = newInsertOrderId[0][0].insertId;
+      
+      console.log(newInsertOrderId[0][0].insertId);
+  
+      // Insert a new order item into the `order_items` table with the corresponding order ID
+      const orderItemResult = await this.connection.query(
+        'INSERT INTO order_items (order_id, cart_id, total_price, customer_name, customer_email, shipping_address, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [newOrderId, cart_id, total_price, customer_name, customer_email, shipping_address, new Date(), new Date()]
+      );
+  
+      // Retrieve the newly inserted order item
+      const [newOrderItem] = await this.connection.query(
+        'SELECT * FROM order_items WHERE id = ?',
+        [orderItemResult.insertId]
+      );
+  
+      return newOrderItem;
+    } catch (error) {
+      console.error('Error creating new order:', error);
+      throw new HttpException('Could not create new order', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   async getOrderById(orderId: number) {
     const [rows] = await this.connection.query('SELECT * FROM orders WHERE id = ?', [orderId]);
     return rows[0];
@@ -112,25 +122,13 @@ export class OrdersService {
     return updatedOrderRow;
   }
 
-  async createOrderNew(user_id: string, payment: PaymentMethod, status: OrderStatus): Promise<Order> {
-    const [existingOrder] = await this.connection.query('SELECT * FROM orders WHERE user_id = ?', [user_id]);
-  
-    if (existingOrder) {
-      throw new Error(`Order with user ID ${user_id} already exists.`);
-    }
-  
-    const result = await this.connection.query(
-      'INSERT INTO orders (user_id, payment, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
-      [user_id, payment, status, new Date(), new Date()],
+  async getOrdersByUserId(userId: number): Promise<Order[]> {
+    const orders = await this.connection.query(
+      'SELECT * FROM orders WHERE user_id = ?',
+      [userId]
     );
   
-    const [newOrder] = await this.connection.query(
-      'SELECT * FROM orders WHERE id = ?',
-      [result.insertId],
-    );
-  
-    return newOrder;
+    return orders;
   }
-
   
 }

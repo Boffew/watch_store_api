@@ -11,12 +11,22 @@ import { CartsService } from 'src/carts/carts.service';
 import { OrdersService } from 'src/orders/orders.service';
 
 @Module({
-  imports: [UsersModule,PassportModule,
+  imports: [
+    UsersModule,
+    PassportModule,
     JwtModule.register({
-    secret: jwtConstants.secret,
-    signOptions: { expiresIn: '6000s' },
-  }),],
-  providers: [AuthService,LocalStrategy,JwtStrategy,RolesGuard,CartsService,OrdersService],
-  exports: [AuthService],
+      secret: jwtConstants.secret,
+      signOptions: { expiresIn: '6000s' },
+    }),
+  ],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    RolesGuard,
+    CartsService,
+    OrdersService,
+  ],
+  exports: [AuthService, PassportModule],
 })
 export class AuthModule {}
