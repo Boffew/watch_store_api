@@ -80,32 +80,12 @@ export class OrdersService {
     return rows[0];
   }
 
-  async getOrderItemsByOrderId(orderId: number): Promise<OrderItem[]> {
-    const orderItems = await this.connection.query(
+  async getOrderItemsByOrderId(order_id: number): Promise<OrderItem> {
+    const [orderItems] = await this.connection.query(
       'SELECT * FROM order_items WHERE order_id = ?',
-      [orderId],
+      [order_id],
     );
-
-    if (!orderItems || orderItems.length === 0) {
-      throw new NotFoundException(
-        `Order items for order with ID ${orderId} not found`,
-      );
-    }
-
-    return orderItems.map(
-      (row) =>
-        ({
-          id: row.id,
-          order_id: row.order_id,
-          product_id: row.product_id,
-          cart_id: row.cart_id,
-          quantity: row.quantity,
-          total_price: row.total_price,
-          customer_name: row.customer_name,
-          customer_email: row.customer_email,
-          shipping_address: row.shipping_address,
-        } as OrderItem),
-    );
+    return orderItems;
   }
 
   async updateOrderItem(

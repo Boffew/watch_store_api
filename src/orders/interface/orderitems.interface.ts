@@ -8,6 +8,8 @@ export interface OrderItem {
   customer_name: string;
   customer_email: string;
   shipping_address: string;
+  created_at: Date;
+  updated_at: Date;
 
   
 }

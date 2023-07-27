@@ -35,7 +35,6 @@ import { OrderItem } from './interface/orderitems.interface';
 export class OrderController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @ApiBody({ type: CreateOrderDto, description: 'Create a new order item' })
@@ -45,7 +44,10 @@ export class OrderController {
     @Req() req,
   ): Promise<OrderItem> {
     const user = req.user as User;
-    const newOrderItem: OrderItem = await this.ordersService.createNew(orderDto, user);
+    const newOrderItem: OrderItem = await this.ordersService.createNew(
+      orderDto,
+      user,
+    );
     return newOrderItem;
   }
 
@@ -53,19 +55,10 @@ export class OrderController {
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   // @ApiResponse({ status: 200, description: 'Order items retrieved successfully', type: MyNamespace.OrderItem, isArray: true })
-  @Get(':orderId/items')
-  async getOrderItemsByOrderId(
-    @Param('orderId') orderId: number,
-  ): Promise<OrderItem[]> {
+  @Get(':order_id/items')
+  async getOrderItemsByOrderId(@Param('order_id') orderId: number) {
     const orderItems = await this.ordersService.getOrderItemsByOrderId(orderId);
-
-    if (!orderItems || orderItems.length === 0) {
-      throw new NotFoundException(
-        `Order items for order with ID ${orderId} not found`,
-      );
-    }
-
-    return orderItems;
+    return { message: 'Order items retrieved successfully', orderItems };
   }
 
   @ApiOperation({ summary: 'Update an order item' })
