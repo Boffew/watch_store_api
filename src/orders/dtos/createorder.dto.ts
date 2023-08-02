@@ -1,53 +1,46 @@
-import {
-  IsEmpty,
-    IsEnum,
-    IsNumber,
-    IsObject,
-    IsString
-} from 'class-validator';
+import { IsEmail, IsEnum, IsNumber, IsObject, IsString } from 'class-validator';
 import { OrderStatus, PaymentMethod } from '../methor/OrderMethod';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class OrderItemBody {
-    @ApiProperty({ example: 0, description: '' })
-    @IsNumber()
-    cart_id: number;
-  
-    @ApiProperty({ example: 0, description: '' })
-    @IsNumber()
-    total_price: number;
-  
-    @ApiProperty({ example: "string", description: '' })
-    @IsString()
-    customer_name: string;
-  
-    @ApiProperty({ example: "string", description: '' })
-    @IsString()
-    customer_email: string;
-  
-    @ApiProperty({ example: "string", description: '' })
-    @IsString()
-    shipping_address: string;
-  }
-  
-  export class OrderBody {
-    @ApiProperty({ example: "enum", description: '' })
-    @IsEmpty()
-    @IsEnum(PaymentMethod)
-    payment: PaymentMethod;
+  @ApiProperty({ example: 0, description: 'The ID of the cart' })
+  @IsNumber()
+  cart_id: number;
 
-    @ApiProperty({ example: "enum", description: '' })
-    @IsEmpty()
-    @IsEnum(OrderStatus)
-    status: OrderStatus;
-  }
-  
+  @ApiProperty({ example: 0, description: 'The total price of the order' })
+  @IsNumber()
+  total_price: number;
+
+  @ApiProperty({ example: 'Abc', description: 'The name of the customer' })
+  @IsString()
+  customer_name: string;
+
+  @ApiProperty({ example: 'abc@gmail.com', description: 'The email address of the customer' })
+  @IsString()
+  @IsEmail()
+  customer_email: string;
+
+  @ApiProperty({ example: 'Huế, TP Huế', description: 'The shipping address for the order' })  
+  @IsString()
+  shipping_address: string;
+}
+
+export class OrderBody {
+  @ApiProperty({ enum: PaymentMethod, description: 'The payment method for the order (null)' })
+  @IsEnum(PaymentMethod)
+  payment: PaymentMethod;
+
+  @ApiProperty({ enum: OrderStatus, description: 'The status of the order (null)' })
+  @IsEnum(OrderStatus)
+  status: OrderStatus;
+}
 
 export class CreateOrderDto {
+  @ApiProperty({ type: OrderItemBody, description: 'The order item details' })
   @IsObject()
   orderItems: OrderItemBody;
 
+  @ApiProperty({ type: OrderBody, description: 'The order details' })
   @IsObject()
-  order: OrderBody
+  order: OrderBody;
 }
-
