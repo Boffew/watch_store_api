@@ -88,10 +88,14 @@ export class ReviewsController {
   //   status: 200,
   //   description: 'All reviews for the specified product',
   // })
-  @Get(':productId/reviews')
-  async getAllByProductId(@Param('productId') productId: number) {
-    const reviews = await this.reviewsService.getAllByProductId(productId);
-    return { reviews };
+   @Get(':productId/reviews')
+  async getAllByProductId(@Param('productId') productId: number): Promise<Reviews[]> {
+    try {
+      const reviews = await this.reviewsService.getAllByProductId(productId);
+      return reviews;
+    } catch (error) {
+      throw new Error(`Failed to get reviews for product ${productId}: ${error.message}`);
+    }
   }
 
   @ApiBearerAuth('JWT-auth')
@@ -100,14 +104,18 @@ export class ReviewsController {
     status: 200,
     description: 'The review has been successfully deleted.',
   })
-  @ApiResponse({ status: 404, description: 'Review not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
+
   @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
-  async deleteReviewById(@Req() req, @Param('id') id: string): Promise<{ id: number }> {
+  async deleteReview(
+    @Param('id') id: number,
+    @Request() req,
+  ): Promise<{ message: string }> {
     const userId = req.user.id;
-    const deletedId = await this.reviewsService.deleteByUserId(parseInt(id, 10), userId);
-    return { id: deletedId };
+
+    await this.reviewsService.deleteByUserId(id, userId);
+
+    return { message: `Đã xoá đánh giá với id ${id}` };
   }
 
   @ApiBearerAuth('JWT-auth')

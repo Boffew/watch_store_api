@@ -10,6 +10,9 @@ import {
   NotFoundException,
   UseGuards,
   HttpStatus,
+  UnauthorizedException,
+  InternalServerErrorException,
+  Patch,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { UpdateOrderItemDto } from './dtos/updateorderitem.dto';
@@ -28,6 +31,8 @@ import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
 import { User } from 'src/users/interface/User.interface';
 import { RolesGuard } from 'src/authorization/guards/roles.guard';
 import { OrderItem } from './interface/orderitems.interface';
+import { Order } from './interface/orders.interface';
+import { InternalServerErrorResponse, NotFoundResponse, SuccessResponse, UnauthorizedResponse } from './dtos/response.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('orders')
@@ -42,13 +47,13 @@ export class OrderController {
   async createNew(
     @Body() orderDto: CreateOrderDto,
     @Req() req,
-  ): Promise<OrderItem> {
+  ): Promise<Order> {
     const user = req.user as User;
-    const newOrderItem: OrderItem = await this.ordersService.createNew(
+    const newOrder = await this.ordersService.createNew(
       orderDto,
       user,
     );
-    return newOrderItem;
+    return newOrder;
   }
 
   @ApiOperation({ summary: 'Get all order items in an order' })
@@ -65,16 +70,15 @@ export class OrderController {
   @ApiResponse({ status: 200, description: 'Order item updated successfully' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth') // Đánh dấu API endpoint này yêu cầu xác thực bằng JWT token
-  @Put(':order_item_id')
+  @Put(':orderId/items/:orderItemId')
   async updateOrderItem(
-    @Param('order_item_id') orderItemId: number,
+    @Param('orderId') orderId: number,
+    @Param('orderItemId') orderItemId: number,
     @Body() updateOrderItemDto: UpdateOrderItemDto,
-  ) {
-    const updatedOrderItem = await this.ordersService.updateOrderItem(
-      orderItemId,
-      updateOrderItemDto,
-    );
-    return { message: 'Order item updated successfully', updatedOrderItem };
+    @Req() req,
+  ): Promise<OrderItem> {
+    const userId = req.user.id; // Giả sử userId được lưu trong biến `id` của `user` object trong `req`
+    return this.ordersService.updateOrderItem(orderId, orderItemId, updateOrderItemDto, userId);
   }
 
   // @ApiOperation({ summary: 'Delete an order item' })
@@ -89,12 +93,12 @@ export class OrderController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth') // Đánh dấu API endpoint này yêu cầu xác thực bằng JWT token
   @Delete(':id')
-  async deleteOrderById(
-    @Param('id') orderId: number,
-  ): Promise<{ message: string }> {
-    await this.ordersService.deleteOrderById(orderId);
-    return { message: `Đã xóa đơn hàng với id ${orderId}` };
+  async deleteOrder(@Param('id') orderId: number,@Req() req): Promise<{ success: boolean, message?: string }> {
+    const userId = req.user.id;
+    const result = await this.ordersService.deleteOrderById(orderId, userId);
+    return result;
   }
+  
 
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Update an order' })
@@ -104,17 +108,25 @@ export class OrderController {
   @Put(':id')
   async updateOrder(
     @Param('id') orderId: number,
-    @Body() updatedOrderDto: UpdateOrderDto,
-  ) {
-    const order = await this.ordersService.getOrderById(orderId);
-    if (!order) {
-      throw new NotFoundException(`Order with ID ${orderId} not found`);
+    @Body() updatedOrder: UpdateOrderDto,
+  ): Promise<any> {
+    try {
+      const updatedOrderResult = await this.ordersService.updateOrder(
+        orderId,
+        updatedOrder,
+      );
+      return {
+        message: 'Đơn hàng đã được cập nhật',
+        order: updatedOrderResult,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return {
+          message: 'Không tìm thấy đơn hàng',
+        };
+      }
+      throw error;
     }
-    const updatedOrder = await this.ordersService.updateOrder(
-      orderId,
-      updatedOrderDto,
-    );
-    return { message: 'Order updated successfully', updatedOrder };
   }
 
   @ApiBearerAuth('JWT-auth')
@@ -129,4 +141,34 @@ export class OrderController {
     const orders = await this.ordersService.getOrdersByUserId(userId);
     return { orders };
   }
+
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getAllOrders(): Promise<Order[]> {
+    return this.ordersService.getAllOrders();
+  }
+
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
+  @Get('user/order/:orderId/items')
+  async getOrderItemsByUserAndOrderId(
+    @Req() req,
+    @Param('orderId') orderId: number,
+  ): Promise<OrderItem> {
+    const userId = req.user.id; // Extract the user ID from the JWT token
+    return this.ordersService.getOrderItemsByUserAndOrderId( orderId,userId);
+  }
+
+  // @ApiBearerAuth('JWT-auth')
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Patch(':userId/:orderId/payment')
+  // async updateOrderPaymentByUser(
+  //   
+  //   @Param('orderId') orderId: number,
+  //   @Body('payment') payment: string,
+  // ): Promise<Order> {
+  //   
+  //   return this.ordersService.updateOrderPaymentByUser(userId, orderId, payment);
+  // }
 }

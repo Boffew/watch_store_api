@@ -1,6 +1,6 @@
 export enum PaymentMethod {
+  Card = 'cash',
   CreditCard = 'credit_card',
-  Card = 'card',
 }
 export enum OrderStatus {
   Pending = 'pending',

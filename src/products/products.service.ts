@@ -20,13 +20,13 @@ export class ProductsService {
         const [rows] = await this.connection.execute(query, params);
         return rows;
     }
-    async createNew(productDto: CreateProductDto,file: Express.Multer.File){
-        const image_url =  await this.cloudinary.uploadImage(file);
-        const result= await this.connection.execute('INSERT INTO Products (name, description, image_url, price, brand, color, material, quantity, category_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',[productDto.name, productDto.description, image_url.secure_url, productDto.price, productDto.brand, productDto.color, productDto.material, productDto.quantity, productDto.category_id, new Date()])
-        const id = result[0].insertId;
-        const [newProduct] = await this.connection.query(
-        'SELECT * FROM Products WHERE id = ?',[id])
-        return newProduct[0];
+
+    async createNew(productDto: CreateProductDto){
+      const result= await this.connection.execute('INSERT INTO Products (name, description, image_url, price, brand, color, material, quantity, category_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',[productDto.name, productDto.description, productDto.image_url, productDto.price, productDto.brand, productDto.color, productDto.material, productDto.quantity, productDto.category_id, new Date()])
+      const id = result[0].insertId;
+      const [newProduct] = await this.connection.query(
+      'SELECT * FROM Products WHERE id = ?',[id])
+      return newProduct[0];
     }
     async update(id: number, productDto: UpdateProductDto,file?: Express.Multer.File) {
 
