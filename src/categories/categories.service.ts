@@ -32,10 +32,12 @@ export class CategoriesService {
             return existingCategory[0];
     }
     async deleteCategory(id: number){
-        const [category]= await this.connection.query('DELETE FROM categories WHERE id = ?',[id])
-        if (!category[0]){
+        
+        const [existingCategory]= await this.connection.query('SELECT * FROM categories WHERE id = ?',[id])
+        if (!existingCategory[0]){
             throw new HttpException(`category with id: ${id} doesn't exit`, HttpStatus.INTERNAL_SERVER_ERROR)
         }
+        const [category]= await this.connection.query('DELETE FROM categories WHERE id = ?',[id])
         return 'Category has been deleted successfully'
     }
 }
