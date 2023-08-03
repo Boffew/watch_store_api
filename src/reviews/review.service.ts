@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Inject,
@@ -24,15 +25,16 @@ export class ReviewsService {
     user: User,
   ): Promise<Reviews> {
     try {
-      const userReviewCount = await this.connection.query(
-        'SELECT COUNT(*) as count FROM reviews WHERE user_id = ?',
-        [user.id],
+      // Check if product exists before inserting review
+      const [[product]] = await this.connection.query(
+        'SELECT * FROM products WHERE id = ?',
+        [productId],
       );
 
-      if (userReviewCount[0].count >= 3) {
+      if (!product) {
         throw new HttpException(
-          'User has already submitted 3 reviews',
-          HttpStatus.BAD_REQUEST,
+          `Không tìm thấy sản phẩm có id ${productId}`,
+          HttpStatus.NOT_FOUND,
         );
       }
 
@@ -42,7 +44,7 @@ export class ReviewsService {
       );
 
       if (result.affectedRows !== 1) {
-        throw new Error('Failed to create review');
+        throw new Error('Không thể tạo đánh giá');
       }
 
       const [newReview] = await this.connection.execute(
@@ -52,7 +54,7 @@ export class ReviewsService {
 
       return newReview[0];
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw error;
     }
   }
 
@@ -62,51 +64,119 @@ export class ReviewsService {
     user: User,
     updateReviewDto: UpdateReviewDto,
   ): Promise<Reviews> {
-    const [existingReview] = await this.connection.query(
-      'SELECT * FROM reviews WHERE id = ? AND user_id = ? AND product_id = ?',
-      [id, user.id, productId],
-    );
-    if (!existingReview) {
-      throw new NotFoundException(
-        `Không tìm thấy đánh giá với id ${id}, user_id ${user.id}, và product_id ${productId}`,
+    try {
+      const [[existingReview]] = await this.connection.execute(
+        'SELECT * FROM reviews WHERE id = ? AND user_id = ? AND product_id = ?',
+        [id, user.id, productId],
       );
+  
+      if (!existingReview) {
+        const reviewNotFoundMsg = `Không tìm thấy đánh giá với id ${id}, user_id ${user.id}, và product_id ${productId}`;
+        const reviewExists = await this.connection.execute(
+          'SELECT * FROM reviews WHERE id = ?',
+          [id],
+        );
+        const productExists = await this.connection.execute(
+          'SELECT * FROM products WHERE id = ?',
+          [productId],
+        );
+        if (!reviewExists[0].length) {
+          throw new NotFoundException(`Không tìm thấy đánh giá với id ${id}`);
+        } else if (!productExists[0].length) {
+          throw new NotFoundException(
+            `Không tìm thấy sản phẩm với id ${productId}`,
+          );
+        } else {
+          throw new NotFoundException(reviewNotFoundMsg);
+        }
+      }
+      const { user_id } = existingReview;
+      if (user_id !== user.id) {
+        throw new ForbiddenException('Bạn không có quyền cập nhật đánh giá này');
+      }
+  
+      const result = await this.connection.execute(
+        'UPDATE reviews SET rating = ?, comment = ?, updated_at = ? WHERE id = ? AND user_id = ? AND product_id = ?',
+        [
+          updateReviewDto.rating,
+          updateReviewDto.comment,
+          new Date(),
+          id,
+          user.id,
+          productId,
+        ],
+      );
+  
+      if (result[0].affectedRows === 0) {
+        throw new NotFoundException(`Không tìm thấy đánh giá với id ${id}`);
+      }
+  
+      return existingReview as Reviews;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error(error);
+      throw new InternalServerErrorException('Lỗi cập nhật đánh giá');
     }
-    const result = await this.connection.execute(
-      'UPDATE reviews SET rating = ?, comment = ?, updated_at = ? WHERE id = ? AND user_id = ? AND product_id = ?',
-      [
-        updateReviewDto.rating,
-        updateReviewDto.comment,
-        new Date(),
-        id,
-        user.id,
-        productId,
-      ],
-    );
-
-    const [updatedReview] = await this.connection.query(
-      'SELECT * FROM reviews WHERE id = ?',
-      [id],
-    );
-    return updatedReview[0];
   }
 
   async getAllByProductId(productId: number): Promise<Reviews[]> {
     const statement = 'SELECT * FROM reviews WHERE product_id = ?';
     const [rows] = await this.connection.execute(statement, [productId]);
+
+    if (rows.length === 0) {
+      throw new NotFoundException(
+        `Không tìm thấy reviews cho sản phẩm với id ${productId}`,
+      );
+    }
+
     return rows;
   }
 
   async deleteByUserId(id: number, userId: number): Promise<number> {
-  const result = await this.connection.query(
-    'DELETE FROM reviews WHERE id = ? AND user_id = ?',
-    [id, userId],
-  );
-  if (result.affectedRows === 0) {
-    throw new NotFoundException(
-      `Không tìm thấy đánh giá với id ${id} và user_id ${userId}`,
-    );
-  }
-    return id;
+    try {
+      const [[existingReview]] = await this.connection.query(
+        'SELECT * FROM reviews WHERE id = ?',
+        [id],
+      );
+
+      console.log('existingReview:', existingReview);
+      console.log('userId:', userId);
+
+      if (!existingReview) {
+        throw new NotFoundException(`Không tìm thấy đánh giá với id ${id}`);
+      }
+
+      const { user_id } = existingReview;
+
+      if (user_id !== userId) {
+        console.log('existingReview.user_id:', user_id);
+        console.log('userId:', userId);
+        throw new HttpException(
+          'Bạn không có quyền xóa đánh giá này',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      const result = await this.connection.query(
+        'DELETE FROM reviews WHERE id = ? AND user_id = ?',
+        [id, userId],
+      );
+
+      if (result.affectedRows === 0) {
+        throw new NotFoundException(`Không tìm thấy đánh giá với id ${id}`);
+      }
+
+      return id;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      } else if (error instanceof NotFoundException) {
+        throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+      }
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async getAllByUserId(userId: number): Promise<Reviews[]> {

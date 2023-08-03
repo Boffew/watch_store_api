@@ -1,4 +1,5 @@
 import { OrderStatus, PaymentMethod } from '../methor/OrderMethod';
+import { OrderItem } from './orderitems.interface';
 
 export interface Order {
   id: number;
@@ -7,4 +8,5 @@ export interface Order {
   status: OrderStatus;
   created_at: Date;
   updated_at: Date;
+  order_items: OrderItem[];
 }

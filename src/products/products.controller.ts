@@ -19,17 +19,17 @@ export class ProductsController {
        return product
     }
     @Post()
-    @UseInterceptors(FileInterceptor('image',{
-        fileFilter: (req, file, cb) => {
-          if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-            return cb(new Error('Only image files are allowed!'), false);
-          }
-          cb(null, true);
-        },
-      }))
+    // @UseInterceptors(FileInterceptor('image',{
+    //     fileFilter:d (req, file, cb) => {
+    //       if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+    //         return cb(new Error('Only image files are allowed!'), false);
+    //       }
+    //       cb(null, true);
+    //     },
+    //   }))
     @UsePipes(new ValidationPipe)
-    async createProduct(@Body() productData: CreateProductDto,@UploadedFile() image: Express.Multer.File){
-        const product = await this.productsService.createNew(productData,image)
+    async createProduct(@Body() productData: CreateProductDto){
+        const product = await this.productsService.createNew(productData)
         return product;
     }
     @Put(':id')

@@ -13,6 +13,8 @@ import {
   UseGuards,
   HttpStatus,
   HttpException,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -38,6 +40,7 @@ export class ReviewsController {
   @ApiOperation({ summary: 'Create a new review for a product and a user' })
   @ApiResponse({ status: 201, description: 'The created review' })
   @ApiResponse({ status: 404, description: 'Product or user not found' })
+  @UsePipes(new ValidationPipe({ transform: true }))
   @UseGuards(AuthGuard('jwt'))
   @Post(':productId')
   async create(
@@ -59,6 +62,7 @@ export class ReviewsController {
   @ApiResponse({ status: 200, description: 'The updated review' })
   @ApiResponse({ status: 404, description: 'Review not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
+  @UsePipes(new ValidationPipe({ transform: true }))
   @UseGuards(AuthGuard('jwt'))
   @Put(':id/product/:productId')
   async updateReview(
@@ -89,9 +93,9 @@ export class ReviewsController {
   //   description: 'All reviews for the specified product',
   // })
   @Get(':productId/reviews')
-  async getAllByProductId(@Param('productId') productId: number) {
-    const reviews = await this.reviewsService.getAllByProductId(productId);
-    return { reviews };
+  async getAllByProductId(@Param('productId') productId: number): Promise<Reviews[]> {
+      const reviews = await this.reviewsService.getAllByProductId(productId);
+      return reviews;
   }
 
   @ApiBearerAuth('JWT-auth')
@@ -100,14 +104,18 @@ export class ReviewsController {
     status: 200,
     description: 'The review has been successfully deleted.',
   })
-  @ApiResponse({ status: 404, description: 'Review not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
+
   @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
-  async deleteReviewById(@Req() req, @Param('id') id: string): Promise<{ id: number }> {
+  async deleteReview(
+    @Param('id') id: number,
+    @Request() req,
+  ): Promise<{ message: string }> {
     const userId = req.user.id;
-    const deletedId = await this.reviewsService.deleteByUserId(parseInt(id, 10), userId);
-    return { id: deletedId };
+
+    await this.reviewsService.deleteByUserId(id, userId);
+
+    return { message: `Đã xoá đánh giá với id ${id}` };
   }
 
   @ApiBearerAuth('JWT-auth')
