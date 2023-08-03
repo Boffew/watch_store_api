@@ -31,33 +31,30 @@ export class OrdersService {
         customer_email,
         shipping_address,
       } = orderDto.orderItems;
-  
+
       // Kiểm tra xem giỏ hàng có tồn tại không
       const cart = await this.connection.query(
         'SELECT * FROM carts WHERE id = ?',
         [cart_id],
       );
-  
+
       if (!cart || !cart[0]) {
-        throw new HttpException(
-          'Cart does not exist',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new HttpException('Cart does not exist', HttpStatus.BAD_REQUEST);
       }
-  
+
       const newOrderResult = await this.connection.query(
         `INSERT INTO orders (user_id, payment, status) VALUES (?, ?, ?)`,
         [user.id, payment, status],
       );
-  
+
       const newInsertOrderId = await this.connection.query(
         `SELECT LAST_INSERT_ID() as "insertId"`,
       );
-  
+
       const newOrderId = newInsertOrderId[0][0].insertId;
-  
+
       console.log(newInsertOrderId[0][0].insertId);
-  
+
       const orderItemResult = await this.connection.query(
         'INSERT INTO order_items (order_id, cart_id, total_price, customer_name, customer_email, shipping_address, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         [
@@ -71,12 +68,12 @@ export class OrdersService {
           new Date(),
         ],
       );
-  
+
       const [newOrderItem] = await this.connection.query(
         'SELECT * FROM order_items WHERE id = ?',
         [orderItemResult.insertId],
       );
-  
+
       const orderItems: OrderItem[] = [newOrderItem]; // Lưu trữ danh sách các đối tượng OrderItem
       const newOrder: Order = {
         id: newOrderId,
@@ -87,7 +84,7 @@ export class OrdersService {
         updated_at: new Date(), // Thêm thuộc tính updated_at
         order_items: orderItems, // Gán giá trị cho thuộc tính order_items từ danh sách các đối tượng OrderItem
       };
-  
+
       return newOrder;
     } catch (error) {
       console.error('Error creating new order:', error);
@@ -112,7 +109,9 @@ export class OrdersService {
       [order_id],
     );
     if (!orderItems.length) {
-      throw new NotFoundException(`Không tìm thấy order item với id ${order_id}`);
+      throw new NotFoundException(
+        `Không tìm thấy order item với id ${order_id}`,
+      );
     }
     return orderItems;
   }

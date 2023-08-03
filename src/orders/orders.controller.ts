@@ -32,7 +32,12 @@ import { User } from 'src/users/interface/User.interface';
 import { RolesGuard } from 'src/authorization/guards/roles.guard';
 import { OrderItem } from './interface/orderitems.interface';
 import { Order } from './interface/orders.interface';
-import { InternalServerErrorResponse, NotFoundResponse, SuccessResponse, UnauthorizedResponse } from './dtos/response.dto';
+import {
+  InternalServerErrorResponse,
+  NotFoundResponse,
+  SuccessResponse,
+  UnauthorizedResponse,
+} from './dtos/response.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('orders')
@@ -49,10 +54,7 @@ export class OrderController {
     @Req() req,
   ): Promise<Order> {
     const user = req.user as User;
-    const newOrder = await this.ordersService.createNew(
-      orderDto,
-      user,
-    );
+    const newOrder = await this.ordersService.createNew(orderDto, user);
     return newOrder;
   }
 
@@ -78,7 +80,12 @@ export class OrderController {
     @Req() req,
   ): Promise<OrderItem> {
     const userId = req.user.id; // Giả sử userId được lưu trong biến `id` của `user` object trong `req`
-    return this.ordersService.updateOrderItem(orderId, orderItemId, updateOrderItemDto, userId);
+    return this.ordersService.updateOrderItem(
+      orderId,
+      orderItemId,
+      updateOrderItemDto,
+      userId,
+    );
   }
 
   // @ApiOperation({ summary: 'Delete an order item' })
@@ -93,12 +100,14 @@ export class OrderController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth') // Đánh dấu API endpoint này yêu cầu xác thực bằng JWT token
   @Delete(':id')
-  async deleteOrder(@Param('id') orderId: number,@Req() req): Promise<{ success: boolean, message?: string }> {
+  async deleteOrder(
+    @Param('id') orderId: number,
+    @Req() req,
+  ): Promise<{ success: boolean; message?: string }> {
     const userId = req.user.id;
     const result = await this.ordersService.deleteOrderById(orderId, userId);
     return result;
   }
-  
 
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Update an order' })
@@ -157,18 +166,18 @@ export class OrderController {
     @Param('orderId') orderId: number,
   ): Promise<OrderItem> {
     const userId = req.user.id; // Extract the user ID from the JWT token
-    return this.ordersService.getOrderItemsByUserAndOrderId( orderId,userId);
+    return this.ordersService.getOrderItemsByUserAndOrderId(orderId, userId);
   }
 
   // @ApiBearerAuth('JWT-auth')
   // @UseGuards(JwtAuthGuard, RolesGuard)
   // @Patch(':userId/:orderId/payment')
   // async updateOrderPaymentByUser(
-  //   
+  //
   //   @Param('orderId') orderId: number,
   //   @Body('payment') payment: string,
   // ): Promise<Order> {
-  //   
+  //
   //   return this.ordersService.updateOrderPaymentByUser(userId, orderId, payment);
   // }
 }

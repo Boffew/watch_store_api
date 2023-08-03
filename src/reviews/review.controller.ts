@@ -88,14 +88,10 @@ export class ReviewsController {
   //   status: 200,
   //   description: 'All reviews for the specified product',
   // })
-   @Get(':productId/reviews')
+  @Get(':productId/reviews')
   async getAllByProductId(@Param('productId') productId: number): Promise<Reviews[]> {
-    try {
       const reviews = await this.reviewsService.getAllByProductId(productId);
       return reviews;
-    } catch (error) {
-      throw new Error(`Failed to get reviews for product ${productId}: ${error.message}`);
-    }
   }
 
   @ApiBearerAuth('JWT-auth')
