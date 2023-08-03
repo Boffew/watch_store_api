@@ -13,6 +13,8 @@ import {
   UseGuards,
   HttpStatus,
   HttpException,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -38,6 +40,7 @@ export class ReviewsController {
   @ApiOperation({ summary: 'Create a new review for a product and a user' })
   @ApiResponse({ status: 201, description: 'The created review' })
   @ApiResponse({ status: 404, description: 'Product or user not found' })
+  @UsePipes(new ValidationPipe({ transform: true }))
   @UseGuards(AuthGuard('jwt'))
   @Post(':productId')
   async create(
@@ -59,6 +62,7 @@ export class ReviewsController {
   @ApiResponse({ status: 200, description: 'The updated review' })
   @ApiResponse({ status: 404, description: 'Review not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
+  @UsePipes(new ValidationPipe({ transform: true }))
   @UseGuards(AuthGuard('jwt'))
   @Put(':id/product/:productId')
   async updateReview(

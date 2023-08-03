@@ -13,6 +13,8 @@ import {
   UnauthorizedException,
   InternalServerErrorException,
   Patch,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { UpdateOrderItemDto } from './dtos/updateorderitem.dto';
@@ -38,6 +40,7 @@ import {
   SuccessResponse,
   UnauthorizedResponse,
 } from './dtos/response.dto';
+import { throwError } from 'rxjs';
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('orders')
@@ -48,14 +51,18 @@ export class OrderController {
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @ApiBody({ type: CreateOrderDto, description: 'Create a new order item' })
+  @UsePipes(new ValidationPipe())
   @Post()
   async createNew(
     @Body() orderDto: CreateOrderDto,
     @Req() req,
   ): Promise<Order> {
     const user = req.user as User;
-    const newOrder = await this.ordersService.createNew(orderDto, user);
-    return newOrder;
+    return this.ordersService.createNew(orderDto, user).then((order) => {
+      return order;
+    }).catch((e) => {
+      return throwError(() => e).toPromise();
+    });
   }
 
   @ApiOperation({ summary: 'Get all order items in an order' })
@@ -72,6 +79,7 @@ export class OrderController {
   @ApiResponse({ status: 200, description: 'Order item updated successfully' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth') // Đánh dấu API endpoint này yêu cầu xác thực bằng JWT token
+  @UsePipes(new ValidationPipe())
   @Put(':orderId/items/:orderItemId')
   async updateOrderItem(
     @Param('orderId') orderId: number,

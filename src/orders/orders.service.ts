@@ -33,13 +33,13 @@ export class OrdersService {
       } = orderDto.orderItems;
 
       // Kiểm tra xem giỏ hàng có tồn tại không
-      const cart = await this.connection.query(
-        'SELECT * FROM carts WHERE id = ?',
-        [cart_id],
+      const [cart] = await this.connection.query(
+        'SELECT * FROM carts WHERE id = ? AND user_id = ?',
+        [cart_id, user.id],
       );
 
-      if (!cart || !cart[0]) {
-        throw new HttpException('Cart does not exist', HttpStatus.BAD_REQUEST);
+      if (!cart || cart.length === 0) {
+        throw new NotFoundException('Cart does not exist');
       }
 
       const newOrderResult = await this.connection.query(
@@ -87,7 +87,10 @@ export class OrdersService {
 
       return newOrder;
     } catch (error) {
-      console.error('Error creating new order:', error);
+      console.error('Error creating new order:', error.status);
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw error;
+      }
       throw new HttpException(
         'Could not create new order',
         HttpStatus.INTERNAL_SERVER_ERROR,

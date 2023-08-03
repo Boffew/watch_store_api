@@ -1,36 +1,57 @@
-import { IsEmail, IsEnum, IsNumber, IsObject, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsNumber,
+  IsObject,
+  IsPositive,
+  IsString,
+} from 'class-validator';
 import { OrderStatus, PaymentMethod } from '../methor/OrderMethod';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class OrderItemBody {
   @ApiProperty({ example: 0, description: 'The ID of the cart' })
   @IsNumber()
+  @IsPositive()
   cart_id: number;
 
   @ApiProperty({ example: 0, description: 'The total price of the order' })
   @IsNumber()
+  @IsPositive()
   total_price: number;
 
   @ApiProperty({ example: 'Abc', description: 'The name of the customer' })
   @IsString()
   customer_name: string;
 
-  @ApiProperty({ example: 'abc@gmail.com', description: 'The email address of the customer' })
+  @ApiProperty({
+    example: 'abc@gmail.com',
+    description: 'The email address of the customer',
+  })
   @IsString()
-  @IsEmail()
+  @IsEmail(undefined, { message: 'Invalid email address' })
   customer_email: string;
 
-  @ApiProperty({ example: 'Huế, TP Huế', description: 'The shipping address for the order' })  
+  @ApiProperty({
+    example: 'Huế, TP Huế',
+    description: 'The shipping address for the order',
+  })
   @IsString()
   shipping_address: string;
 }
 
 export class OrderBody {
-  @ApiProperty({ enum: PaymentMethod, description: 'The payment method for the order (null)' })
+  @ApiProperty({
+    enum: PaymentMethod,
+    description: 'The payment method for the order (null)',
+  })
   @IsEnum(PaymentMethod)
   payment: PaymentMethod;
 
-  @ApiProperty({ enum: OrderStatus, description: 'The status of the order (null)' })
+  @ApiProperty({
+    enum: OrderStatus,
+    description: 'The status of the order (null)',
+  })
   @IsEnum(OrderStatus)
   status: OrderStatus;
 }
