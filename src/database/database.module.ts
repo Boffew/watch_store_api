@@ -3,7 +3,10 @@ import { Pool, createPool } from 'mysql2/promise';
 
 
 @Global()
-@Module({})
+@Module({
+  
+})
+
 export class DatabaseModule {
   static forRoot(): any {
     return {

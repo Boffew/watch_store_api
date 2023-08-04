@@ -9,6 +9,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { RolesGuard } from 'src/authorization/guards/roles.guard';
 import { CartsService } from 'src/carts/carts.service';
 import { OrdersService } from 'src/orders/orders.service';
+import { ReviewsService } from 'src/reviews/review.service';
 
 @Module({
   imports: [UsersModule,PassportModule,

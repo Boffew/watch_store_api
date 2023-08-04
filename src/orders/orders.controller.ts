@@ -11,7 +11,7 @@ import { CreateOrderDto } from './dtos/createorder.dto';
 import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
 
 @UseGuards(JwtAuthGuard)
-@ApiTags('order')
+@ApiTags('orders')
 @Controller('order')
 export class OrderController {
 constructor(private readonly ordersService: OrdersService) {}

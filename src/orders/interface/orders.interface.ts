@@ -6,8 +6,7 @@ export interface Order {
     user_id: number;
     payment: PaymentMethod;
     status: OrderStatus;
-    created_at: Date;
-    updated_at: Date;
+    
     
   }
 
