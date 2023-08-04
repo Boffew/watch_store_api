@@ -74,7 +74,7 @@ export class OrdersService {
         [orderItemResult.insertId],
       );
 
-      const orderItems: OrderItem[] = [newOrderItem]; // Lưu trữ danh sách các đối tượng OrderItem
+      // const orderItems: OrderItem[] = [newOrderItem]; // Lưu trữ danh sách các đối tượng OrderItem
       const newOrder: Order = {
         id: newOrderId,
         status,
@@ -82,7 +82,7 @@ export class OrdersService {
         user_id: user.id,
         created_at: new Date(),
         updated_at: new Date(), // Thêm thuộc tính updated_at
-        order_items: orderItems, // Gán giá trị cho thuộc tính order_items từ danh sách các đối tượng OrderItem
+        // order_items: orderItems, // Gán giá trị cho thuộc tính order_items từ danh sách các đối tượng OrderItem
       };
 
       return newOrder;
@@ -119,19 +119,19 @@ export class OrdersService {
     return orderItems;
   }
 
-  async getOrderItemsByUserAndOrderId(
-    userId: number,
-    orderId: number,
-  ): Promise<OrderItem> {
-    const query = `
-      SELECT *
-      FROM order_items oi
-      INNER JOIN orders o ON o.id = oi.order_id
-      WHERE o.id = ? AND o.user_id = ?
-    `;
-    const [rows] = await this.connection.query(query, [orderId, userId]);
-    return rows;
-  }
+  // async getOrderItemsByUserAndOrderId(
+  //   userId: number,
+  //   orderId: number,
+  // ): Promise<OrderItem> {
+  //   const query = `
+  //     SELECT *
+  //     FROM order_items oi
+  //     INNER JOIN orders o ON o.id = oi.order_id
+  //     WHERE o.id = ? AND o.user_id = ?
+  //   `;
+  //   const [rows] = await this.connection.query(query, [orderId, userId]);
+  //   return rows;
+  // }
 
   async updateOrderItem(
     orderId: number,

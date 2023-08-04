@@ -1,21 +1,27 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmpty, IsNumber } from 'class-validator';
+import { IsEmail, IsEmpty, IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
 
 export class UpdateOrderItemDto {
-  @ApiProperty({ example: 0, description: 'The ID of the ' })
-  @IsEmpty()
+  
+  @ApiProperty({ example: 0, description: '' })
+  @IsNotEmpty()
   @IsNumber()
+  @IsPositive()
   total_price: number;
 
-  @ApiProperty({ example: 'string', description: '' })
-  @IsEmpty()
+  @ApiProperty({ example: 'abc', description: '' })
+  @IsNotEmpty()
+  @IsString()
   customer_name: string;
 
-  @ApiProperty({ example: 'string', description: '' })
-  @IsEmpty()
+  @ApiProperty({ example: 'abc@gmail.com', description: '' })
+  @IsNotEmpty()
+  @IsEmail()
+  @IsString()
   customer_email: string;
 
-  @ApiProperty({ example: 'string', description: '' })
-  @IsEmpty()
+  @ApiProperty({ example: 'abc', description: '' })
+  @IsNotEmpty()
+  @IsString()
   shipping_address: string;
 }

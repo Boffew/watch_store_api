@@ -122,6 +122,7 @@ export class OrderController {
   @ApiResponse({ status: 200, description: 'Order updated successfully' })
   @ApiParam({ name: 'id', description: 'ID of the order to be updated' })
   @ApiBearerAuth('JWT-auth') // Đánh dấu API endpoint này yêu cầu xác thực bằng JWT token
+  @UsePipes(new ValidationPipe())
   @Put(':id')
   async updateOrder(
     @Param('id') orderId: number,
@@ -166,16 +167,16 @@ export class OrderController {
     return this.ordersService.getAllOrders();
   }
 
-  @ApiBearerAuth('JWT-auth')
-  @UseGuards(JwtAuthGuard)
-  @Get('user/order/:orderId/items')
-  async getOrderItemsByUserAndOrderId(
-    @Req() req,
-    @Param('orderId') orderId: number,
-  ): Promise<OrderItem> {
-    const userId = req.user.id; // Extract the user ID from the JWT token
-    return this.ordersService.getOrderItemsByUserAndOrderId(orderId, userId);
-  }
+  // @ApiBearerAuth('JWT-auth')
+  // @UseGuards(JwtAuthGuard)
+  // @Get('user/order/:orderId/items')
+  // async getOrderItemsByUserAndOrderId(
+  //   @Req() req,
+  //   @Param('orderId') orderId: number,
+  // ): Promise<OrderItem> {
+  //   const userId = req.user.id; // Extract the user ID from the JWT token
+  //   return this.ordersService.getOrderItemsByUserAndOrderId(orderId, userId);
+  // }
 
   // @ApiBearerAuth('JWT-auth')
   // @UseGuards(JwtAuthGuard, RolesGuard)

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsInt, Min, Max } from 'class-validator';
+import { IsInt, Min, Max, IsString } from 'class-validator';
 
 export class CreateReviewDto {
   @ApiProperty({ example: 4, description: 'Rating value (1-5)' })
@@ -11,5 +11,6 @@ export class CreateReviewDto {
   rating: number;
 
   @ApiProperty({ example: 'Good product!', description: 'Review comment' })
+  @IsString()
   comment: string;
 }
