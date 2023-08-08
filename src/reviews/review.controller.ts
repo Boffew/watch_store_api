@@ -15,6 +15,7 @@ import {
   HttpException,
   UsePipes,
   ValidationPipe,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -92,10 +93,9 @@ export class ReviewsController {
   //   status: 200,
   //   description: 'All reviews for the specified product',
   // })
-  @Get(':productId/reviews')
+  @Get(':productId')
   async getAllByProductId(@Param('productId') productId: number): Promise<Reviews[]> {
-      const reviews = await this.reviewsService.getAllByProductId(productId);
-      return reviews;
+    return this.reviewsService.getAllByProductId(productId);
   }
 
   @ApiBearerAuth('JWT-auth')
@@ -124,10 +124,23 @@ export class ReviewsController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Lỗi máy chủ',
   })
-  @Get('user')
-  async getAllByUserId(@Req() req) {
-    const userId = req.user.id;
-    const reviews = await this.reviewsService.getAllByUserId(userId);
-    return { reviews };
+  // @Get('user')
+  // async getAllByUserId(@Req() req) {
+  //   const userId = req.user.id; 
+  //   const Reviews = await this.reviewsService.getAllByUserId(userId);
+  //   return { Reviews };
+  // }
+  @Get('user/:userId')
+  async getAllByUserId(@Req() req): Promise<Reviews[]> {
+    try {
+      const userId = req.user.id; 
+      return await this.reviewsService.getAllByUserId(userId);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException(error.message);
+      } else {
+        throw new InternalServerErrorException('An error occurred while retrieving reviews by user ID.');
+      }
+    }
   }
 }

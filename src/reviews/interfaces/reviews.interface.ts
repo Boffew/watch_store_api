@@ -4,3 +4,8 @@ export interface Reviews {
   rating: number;
   comment: string;
 }
+
+export interface User {
+  id: number;
+  name: string;
+}

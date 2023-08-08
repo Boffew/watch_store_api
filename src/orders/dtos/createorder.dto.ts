@@ -1,10 +1,14 @@
 import {
   IsEmail,
   IsEnum,
+  IsInt,
+  IsNotEmpty,
   IsNumber,
   IsObject,
+  IsPhoneNumber,
   IsPositive,
   IsString,
+  Min,
 } from 'class-validator';
 import { OrderStatus, PaymentMethod } from '../methor/OrderMethod';
 import { ApiProperty } from '@nestjs/swagger';
@@ -38,6 +42,12 @@ export class OrderItemBody {
   })
   @IsString()
   shipping_address: string;
+  
+  @ApiProperty({ example: 0, description: '' })
+  @IsNotEmpty()
+  @IsInt({ message: 'Invalid customer phone, must be an integer' })
+  @Min(0, { message: 'Customer phone must be greater than or equal to 0'})
+  customer_phone: number;
 }
 
 export class OrderBody {

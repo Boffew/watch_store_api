@@ -7,17 +7,18 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+
 import { CreateReviewDto } from './dto/createreview.dto';
 import { UpdateReviewDto } from './dto/updatereview.dto';
 import { Reviews } from './interfaces/reviews.interface';
 import { User } from 'src/users/interface/User.interface';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class ReviewsService {
   constructor(
     @Inject('DATABASE_CONNECTION') private readonly connection: any,
-    private readonly cloudinary: CloudinaryService,
+    private readonly userService: UsersService,
   ) {}
   async createByProductId(
     productId: number,
@@ -69,7 +70,7 @@ export class ReviewsService {
         'SELECT * FROM reviews WHERE id = ? AND user_id = ? AND product_id = ?',
         [id, user.id, productId],
       );
-  
+
       if (!existingReview) {
         const reviewNotFoundMsg = `Không tìm thấy đánh giá với id ${id}, user_id ${user.id}, và product_id ${productId}`;
         const reviewExists = await this.connection.execute(
@@ -92,9 +93,11 @@ export class ReviewsService {
       }
       const { user_id } = existingReview;
       if (user_id !== user.id) {
-        throw new ForbiddenException('Bạn không có quyền cập nhật đánh giá này');
+        throw new ForbiddenException(
+          'Bạn không có quyền cập nhật đánh giá này',
+        );
       }
-  
+
       const result = await this.connection.execute(
         'UPDATE reviews SET rating = ?, comment = ?, updated_at = ? WHERE id = ? AND user_id = ? AND product_id = ?',
         [
@@ -106,11 +109,11 @@ export class ReviewsService {
           productId,
         ],
       );
-  
+
       if (result[0].affectedRows === 0) {
         throw new NotFoundException(`Không tìm thấy đánh giá với id ${id}`);
       }
-  
+
       return existingReview as Reviews;
     } catch (error) {
       if (error instanceof HttpException) {
@@ -120,6 +123,19 @@ export class ReviewsService {
       throw new InternalServerErrorException('Lỗi cập nhật đánh giá');
     }
   }
+
+  // async getAllByProductId(productId: number): Promise<Reviews[]> {
+  //   const statement = 'SELECT * FROM reviews WHERE product_id = ?';
+  //   const [rows] = await this.connection.execute(statement, [productId]);
+
+  //   if (rows.length === 0) {
+  //     throw new NotFoundException(
+  //       `Không tìm thấy reviews cho sản phẩm với id ${productId}`,
+  //     );
+  //   }
+
+  //   return rows;
+  // }
 
   async getAllByProductId(productId: number): Promise<Reviews[]> {
     const statement = 'SELECT * FROM reviews WHERE product_id = ?';
@@ -131,7 +147,30 @@ export class ReviewsService {
       );
     }
 
-    return rows;
+    const reviews: Reviews[] = [];
+
+    for (const row of rows) {
+      const { user_id, ...reviewData } = row;
+      const full_name = await this.getFullNameByUserId(user_id);
+      const reviewWithFullName = { ...reviewData, full_name };
+      reviews.push(reviewWithFullName);
+    }
+
+    return reviews;
+  }
+
+  async getFullNameByUserId(userId: number): Promise<string> {
+    try {
+      const user = await this.userService.getUserById(userId);
+      if (!user) {
+        throw new NotFoundException(
+          `Không tìm thấy người dùng với id ${userId}`,
+        );
+      }
+      return user.full_name;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async deleteByUserId(id: number, userId: number): Promise<number> {
@@ -179,18 +218,17 @@ export class ReviewsService {
     }
   }
 
+  
   async getAllByUserId(userId: number): Promise<Reviews[]> {
     try {
-      const [rows] = await this.connection.execute(
-        'SELECT * FROM reviews WHERE user_id = ?',
-        [userId],
-      );
+      const statement = 'SELECT * FROM reviews WHERE user_id = ?';
+      const [rows] = await this.connection.execute(statement, [userId]);
+
       if (rows.length === 0) {
-        throw new NotFoundException(
-          `Không tìm thấy đánh giá nào cho người dùng có ID ${userId}`,
-        );
+        throw new NotFoundException(`Không tìm thấy đánh giá nào cho người dùng có ID ${userId}`);
       }
-      return rows;
+
+      return rows as Reviews[];
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }

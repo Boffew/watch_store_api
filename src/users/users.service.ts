@@ -4,8 +4,17 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
+   
     constructor(@Inject('DATABASE_CONNECTION') private readonly connection: any ){}
 
+    async getUserById(userId: number) {
+        const [rows] = await this.connection.query('SELECT * FROM users WHERE id = ?', [userId]);
+        if (rows.length === 0) {
+            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        }
+        return rows[0];
+    }
+    
     async getAll(page=1, searchTerm?: string){
         const perpage =20;
         let query= 'SELECT * FROM users';

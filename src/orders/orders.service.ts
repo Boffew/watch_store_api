@@ -22,6 +22,7 @@ export class OrdersService {
     @Inject('DATABASE_CONNECTION') private readonly connection: any,
   ) {}
   async createNew(orderDto: CreateOrderDto, user: User): Promise<Order> {
+    
     try {
       const { payment, status } = orderDto.order;
       const {
@@ -30,6 +31,7 @@ export class OrdersService {
         customer_name,
         customer_email,
         shipping_address,
+        customer_phone,
       } = orderDto.orderItems;
 
       // Kiểm tra xem giỏ hàng có tồn tại không
@@ -56,7 +58,7 @@ export class OrdersService {
       console.log(newInsertOrderId[0][0].insertId);
 
       const orderItemResult = await this.connection.query(
-        'INSERT INTO order_items (order_id, cart_id, total_price, customer_name, customer_email, shipping_address, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO order_items (order_id, cart_id, total_price, customer_name, customer_email, shipping_address, customer_phone,created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [
           newOrderId,
           cart_id,
@@ -64,6 +66,7 @@ export class OrdersService {
           customer_name,
           customer_email,
           shipping_address,
+          customer_phone,
           new Date(),
           new Date(),
         ],
@@ -74,15 +77,13 @@ export class OrdersService {
         [orderItemResult.insertId],
       );
 
-      // const orderItems: OrderItem[] = [newOrderItem]; // Lưu trữ danh sách các đối tượng OrderItem
       const newOrder: Order = {
         id: newOrderId,
         status,
         payment,
         user_id: user.id,
         created_at: new Date(),
-        updated_at: new Date(), // Thêm thuộc tính updated_at
-        // order_items: orderItems, // Gán giá trị cho thuộc tính order_items từ danh sách các đối tượng OrderItem
+        updated_at: new Date(),
       };
 
       return newOrder;
@@ -97,6 +98,8 @@ export class OrdersService {
       );
     }
   }
+
+  
 
   async getOrderById(orderId: number) {
     const [rows] = await this.connection.query(
@@ -119,28 +122,19 @@ export class OrdersService {
     return orderItems;
   }
 
-  // async getOrderItemsByUserAndOrderId(
-  //   userId: number,
-  //   orderId: number,
-  // ): Promise<OrderItem> {
-  //   const query = `
-  //     SELECT *
-  //     FROM order_items oi
-  //     INNER JOIN orders o ON o.id = oi.order_id
-  //     WHERE o.id = ? AND o.user_id = ?
-  //   `;
-  //   const [rows] = await this.connection.query(query, [orderId, userId]);
-  //   return rows;
-  // }
-
   async updateOrderItem(
     orderId: number,
     orderItemId: number,
     updateOrderItemDto: UpdateOrderItemDto,
     userId: number,
   ): Promise<OrderItem> {
-    const { total_price, customer_name, customer_email, shipping_address } =
-      updateOrderItemDto;
+    const {
+      total_price,
+      customer_name,
+      customer_email,
+      shipping_address,
+      customer_phone,
+    } = updateOrderItemDto;
 
     const [[userOrder]] = await this.connection.query(
       'SELECT * FROM orders WHERE id = ? AND user_id = ?',
@@ -172,7 +166,7 @@ export class OrdersService {
 
     const updateOrderItemQuery = `
       UPDATE order_items 
-      SET total_price = ?, customer_name = ?, customer_email = ?, shipping_address = ?, updated_at = ? 
+      SET total_price = ?, customer_name = ?, customer_email = ?, shipping_address = ?, customer_phone = ?, updated_at = ? 
       WHERE id = ? AND order_id = ?
     `;
     const [result] = await this.connection.query(updateOrderItemQuery, [
@@ -180,6 +174,7 @@ export class OrdersService {
       customer_name,
       customer_email,
       shipping_address,
+      customer_phone,
       new Date(),
       orderItemId,
       orderId,
@@ -203,12 +198,6 @@ export class OrdersService {
 
     return updatedOrderItem;
   }
-
-  // async deleteOrderItemById(orderItemId: number): Promise<void> {
-  //   await this.connection.query('DELETE FROM order_items WHERE id = ?', [
-  //     orderItemId,
-  //   ]);
-  // }
 
   async deleteOrderById(
     orderId: number,
@@ -280,15 +269,6 @@ export class OrdersService {
     return updatedOrderRow;
   }
 
-  // async getOrderByUserId(userId: number): Promise<Order[]> {
-  //   const [orders] = await this.connection.query(
-  //     'SELECT * FROM orders WHERE user_id = ?',
-  //     [userId],
-  //   );
-
-  //   return orders;
-  // }
-
   async getOrdersByUserId(userId: number): Promise<Order[]> {
     try {
       const [orders] = await this.connection.query(
@@ -307,15 +287,6 @@ export class OrdersService {
     }
   }
 
-  // async getOrderItemsByUserAndOrderId(userId: number, orderId: number): Promise<OrderItem[]> {
-  //   const query = `
-  //     SELECT * FROM order_items
-  //     WHERE user_id = ? AND order_id = ?
-  //   `;
-  //   const [orderItems, _] = await this.connection.query(query, [userId, orderId]);
-  //   return orderItems;
-  // }
-
   async getAllOrders(): Promise<Order[]> {
     const query = `
       SELECT * FROM orders
@@ -323,35 +294,4 @@ export class OrdersService {
     const [orders, _] = await this.connection.query(query);
     return orders;
   }
-  // async getOrderItemsByOrderIdAndUserId(orderId: number, user: User): Promise<OrderItem[]> {
-  //   const order = await this.orderRepository.findOne({ where: { id: orderId, userId: user.id }, relations: ['orderItems'] });
-
-  //   if (!order) {
-  //     throw new NotFoundException(`Order with ID ${orderId} not found`);
-  //   }
-
-  //   return order.orderItems;
-  // }
-
-  // async updateOrderPaymentByUser(userId: number, orderId: number, payment: string): Promise<Order> {
-  //   const [[order]] = await this.connection.query(
-  //     'SELECT * FROM orders WHERE id = ? AND user_id = ?',
-  //     [orderId, userId],
-  //   );
-
-  //   if (!order) {
-  //     throw new NotFoundException(`Không tìm thấy đơn hàng với ID ${orderId}`);
-  //   }
-
-  //   await this.connection.query(
-  //     'UPDATE orders SET payment = ? WHERE id = ?',
-  //     [payment, orderId],
-  //   );
-
-  //   const [updatedOrderRow] = await this.connection.query(
-  //     'SELECT * FROM orders WHERE id = ?',
-  //     [orderId],
-  //   );
-  //   return updatedOrderRow;
-  // }
 }

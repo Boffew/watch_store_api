@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEmpty, IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
+import { IsEmail, IsEmpty, IsInt, IsNotEmpty, IsNumber, IsPositive, IsString, Min } from 'class-validator';
 
 export class UpdateOrderItemDto {
   
@@ -24,4 +24,9 @@ export class UpdateOrderItemDto {
   @IsNotEmpty()
   @IsString()
   shipping_address: string;
+  @ApiProperty({ example: 0, description: '' })
+  @IsNotEmpty()
+  @IsInt({ message: 'Invalid customer phone, must be an integer' })
+  @Min(0, { message: 'Customer phone must be greater than or equal to 0'})
+  customer_phone: number;
 }

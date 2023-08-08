@@ -27,4 +27,9 @@ export class CreateOrderItemDto {
   @IsNotEmpty()
   @IsString()
   shipping_address: string;
+
+  @ApiProperty({ example: 0, description: '' })
+  @IsNotEmpty()
+  @IsNumber()
+  customer_phone: number;
 }
