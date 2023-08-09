@@ -12,9 +12,6 @@ export class UpdateProductDto{
     price: number;
     @IsNotEmpty()
     @ApiProperty()
-    brand: string;
-    @IsNotEmpty()
-    @ApiProperty()
     color: string;
     @IsNotEmpty()
     @ApiProperty()

@@ -8,5 +8,5 @@ export interface Order {
   status: OrderStatus;
   created_at: Date;
   updated_at: Date;
-  order_items: OrderItem[];
+  // order_items: OrderItem[];
 }
