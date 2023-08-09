@@ -1,3 +1,4 @@
+import { User } from 'src/users/interface/User.interface';
 import { OrderStatus, PaymentMethod } from '../methor/OrderMethod';
 import { OrderItem } from './orderitems.interface';
 
@@ -8,5 +9,6 @@ export interface Order {
   status: OrderStatus;
   created_at: Date;
   updated_at: Date;
+
   // order_items: OrderItem[];
 }

@@ -22,7 +22,6 @@ export class OrdersService {
     @Inject('DATABASE_CONNECTION') private readonly connection: any,
   ) {}
   async createNew(orderDto: CreateOrderDto, user: User): Promise<Order> {
-    
     try {
       const { payment, status } = orderDto.order;
       const {
@@ -98,8 +97,6 @@ export class OrdersService {
       );
     }
   }
-
-  
 
   async getOrderById(orderId: number) {
     const [rows] = await this.connection.query(
