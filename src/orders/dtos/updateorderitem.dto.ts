@@ -24,9 +24,9 @@ export class UpdateOrderItemDto {
   @IsNotEmpty()
   @IsString()
   shipping_address: string;
-  @ApiProperty({ example: 0, description: '' })
+  @ApiProperty({ example: "0389850908", description: '' })
   @IsNotEmpty()
-  @IsInt({ message: 'Invalid customer phone, must be an integer' })
+  @IsString({ message: 'Invalid customer phone, must be an integer' })
   @Min(0, { message: 'Customer phone must be greater than or equal to 0'})
-  customer_phone: number;
+  customer_phone: string;
 }

@@ -96,14 +96,6 @@ export class OrderController {
     );
   }
 
-  // @ApiOperation({ summary: 'Delete an order item' })
-  // @UseGuards(JwtAuthGuard)
-  // @ApiBearerAuth('JWT-auth') // Đáh dấu API endpoint này yêu cầu xác thực bằng JWT token
-  // @Delete(':id/items/:itemId')
-  // async deleteOrderItem(@Param('itemId') orderItemId: number): Promise<void> {
-  //   await this.ordersService.deleteOrderItemById(orderItemId);
-  // }
-
   @ApiOperation({ summary: 'Delete an order' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth') // Đánh dấu API endpoint này yêu cầu xác thực bằng JWT token
@@ -167,26 +159,5 @@ export class OrderController {
     return this.ordersService.getAllOrders();
   }
 
-  // @ApiBearerAuth('JWT-auth')
-  // @UseGuards(JwtAuthGuard)
-  // @Get('user/order/:orderId/items')
-  // async getOrderItemsByUserAndOrderId(
-  //   @Req() req,
-  //   @Param('orderId') orderId: number,
-  // ): Promise<OrderItem> {
-  //   const userId = req.user.id; // Extract the user ID from the JWT token
-  //   return this.ordersService.getOrderItemsByUserAndOrderId(orderId, userId);
-  // }
 
-  // @ApiBearerAuth('JWT-auth')
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Patch(':userId/:orderId/payment')
-  // async updateOrderPaymentByUser(
-  //
-  //   @Param('orderId') orderId: number,
-  //   @Body('payment') payment: string,
-  // ): Promise<Order> {
-  //
-  //   return this.ordersService.updateOrderPaymentByUser(userId, orderId, payment);
-  // }
 }

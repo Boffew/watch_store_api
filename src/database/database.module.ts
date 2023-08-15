@@ -15,8 +15,8 @@ export class DatabaseModule {
             return createPool({
               host: 'localhost',
               user: 'root',
-              password: 'admin',
-              database: 'boffew',
+              password: '',
+              database: 'projectnodejs',
               connectionLimit: 10,
             });
           },
